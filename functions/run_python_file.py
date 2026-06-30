@@ -1,7 +1,23 @@
 import os
 import subprocess
 
+from google.genai import types
+
 from functions.utils import check_if_in_workspace
+
+schema_run_python_file = types.FunctionDeclaration(
+    name="run_python_file",
+    description="run a specified python file",
+    parameters=types.Schema(
+        type=types.Type.OBJECT,
+        properties={
+            "directory": types.Schema(
+                type=types.Type.STRING,
+                description="Directory path to list files from, relative to the working directory (default is the working directory itself)",
+            ),
+        },
+    ),
+)
 
 
 def run_python_file(

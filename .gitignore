@@ -12,3 +12,4 @@ wheels/
 # keys
 .env
 
+test_*

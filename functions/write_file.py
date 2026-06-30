@@ -1,6 +1,22 @@
 import os
 
+from google.genai import types
+
 from functions.utils import check_if_in_workspace
+
+schema_write_file = types.FunctionDeclaration(
+    name="write_file",
+    description="Writes to a file specifed in working directory. Returns str depending on result",
+    parameters=types.Schema(
+        type=types.Type.OBJECT,
+        properties={
+            "directory": types.Schema(
+                type=types.Type.STRING,
+                description="Directory path to list files from, relative to the working directory (default is the working directory itself)",
+            ),
+        },
+    ),
+)
 
 
 def write_file(working_directory: str, file_path: str, content: str) -> str:
@@ -19,7 +35,7 @@ def write_file(working_directory: str, file_path: str, content: str) -> str:
 
         os.makedirs(os.path.dirname(target_path), exist_ok=True)
 
-        open(target_path, mode="w").write(content)
+        _ = open(target_path, mode="w").write(content)
 
         return (
             f'Successfully wrote to "{file_path}" ({len(content)} characters written)'
