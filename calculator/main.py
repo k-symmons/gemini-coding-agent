@@ -2,8 +2,8 @@
 
 import sys
 
-from calculator.pkg.calculator import Calculator
-from calculator.pkg.render import format_json_output
+from pkg.calculator import Calculator
+from pkg.render import format_json_output
 
 
 def main() -> None:

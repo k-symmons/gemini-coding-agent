@@ -1,13 +1,13 @@
 import argparse
 import os
+import sys
 
 from dotenv import load_dotenv
 from google import genai
 from google.genai import types
 
-from call_functions import available_functions, call_function
-from config import MODEL
-from system_prompt import system_prompt
+from config import MAX_ITERS
+from generate_content import generate_content
 
 
 def main() -> None:
@@ -28,43 +28,17 @@ def main() -> None:
     if args.verbose:
         print(f"User prompt: {args.user_prompt}\n")
 
-    generate_content(client, messages, args.verbose)
-
-
-def generate_content(
-    client: genai.Client, messages: list[types.Content], verbose: bool
-) -> None:
-    response = client.models.generate_content(
-        model=MODEL,
-        contents=messages,
-        config=types.GenerateContentConfig(
-            tools=[available_functions], system_instruction=system_prompt
-        ),
-    )
-    if not response.usage_metadata:
-        raise RuntimeError("Gemini API response appears to be malformed")
-
-    if verbose:
-        print("Prompt tokens:", response.usage_metadata.prompt_token_count)
-        print("Response tokens:", response.usage_metadata.candidates_token_count)
-
-    if not response.function_calls:
-        print("Response:")
-        print(response.text)
-
-    function_responses: list[types.Part] = []
-    for function_call in response.function_calls:
-        result = call_function(function_call, verbose)
-        if (
-            not result.parts
-            or not result.parts[0].function_response
-            or not result.parts[0].function_response.response
-        ):
-            raise RuntimeError(f"Empty function_response for {function_call.name}")
-
-        if verbose:
-            print(f"-> {result.parts[0].function_response.response}")
-        function_responses.append(result.parts[0])
+    for _ in range(MAX_ITERS):
+        try:
+            final_response = generate_content(client, messages, args.verbose)
+            if final_response:
+                print("Final response:")
+                print(final_response)
+                return
+        except Exception as e:
+            print(f"Error in generating content {e}")
+    print(f"Maximum iteration ({MAX_ITERS}) reached")
+    sys.exit(1)
 
 
 if __name__ == "__main__":

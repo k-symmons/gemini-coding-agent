@@ -1,3 +1,4 @@
 MAX_CHARS = 10000
 WORKING_DIR = "./calculator/"
-MODEL = "gemini-2.0-flash-lite"
+MODEL = "gemini-2.5-flash"
+MAX_ITERS = 10

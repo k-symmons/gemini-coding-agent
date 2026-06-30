@@ -19,7 +19,7 @@ schema_get_files_info = types.FunctionDeclaration(
 )
 
 
-def get_files_info(working_directory: str, file_path: str = ".") -> str:
+def get_files_info(working_directory: str, directory: str = ".") -> str:
     def get_file_info(file, target_path):
         file_with_directory = os.path.join(target_path, file)
 
@@ -30,13 +30,13 @@ def get_files_info(working_directory: str, file_path: str = ".") -> str:
     # directory validation
     try:
         is_error, target_path = check_if_in_workspace(
-            working_directory=working_directory, file_path=file_path
+            working_directory=working_directory, file_path=directory
         )
         if is_error:
             return f"Error: File not readable cuz its not in {working_directory}"
 
         if not os.path.isdir(target_path):
-            return f'Error: "{file_path}" is not a directory'
+            return f'Error: "{directory}" is not a directory'
         # return file info
         files_info = []
 
