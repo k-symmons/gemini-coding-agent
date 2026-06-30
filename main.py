@@ -5,7 +5,8 @@ from dotenv import load_dotenv
 from google import genai
 from google.genai import types
 
-from call_functions import available_functions
+from call_functions import available_functions, call_function
+from config import MODEL
 from system_prompt import system_prompt
 
 
@@ -34,7 +35,7 @@ def generate_content(
     client: genai.Client, messages: list[types.Content], verbose: bool
 ) -> None:
     response = client.models.generate_content(
-        model="gemini-2.5-flash",
+        model=MODEL,
         contents=messages,
         config=types.GenerateContentConfig(
             tools=[available_functions], system_instruction=system_prompt
@@ -47,13 +48,23 @@ def generate_content(
         print("Prompt tokens:", response.usage_metadata.prompt_token_count)
         print("Response tokens:", response.usage_metadata.candidates_token_count)
 
-    print("Response:")
-    if response.function_calls:
-        for function_call in response.function_calls:
-            print(f"Calling function: {function_call.name}({function_call.args})")
-
-    else:
+    if not response.function_calls:
+        print("Response:")
         print(response.text)
+
+    function_responses: list[types.Part] = []
+    for function_call in response.function_calls:
+        result = call_function(function_call, verbose)
+        if (
+            not result.parts
+            or not result.parts[0].function_response
+            or not result.parts[0].function_response.response
+        ):
+            raise RuntimeError(f"Empty function_response for {function_call.name}")
+
+        if verbose:
+            print(f"-> {result.parts[0].function_response.response}")
+        function_responses.append(result.parts[0])
 
 
 if __name__ == "__main__":

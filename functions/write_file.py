@@ -10,11 +10,15 @@ schema_write_file = types.FunctionDeclaration(
     parameters=types.Schema(
         type=types.Type.OBJECT,
         properties={
-            "directory": types.Schema(
+            "file_path": types.Schema(
                 type=types.Type.STRING,
-                description="Directory path to list files from, relative to the working directory (default is the working directory itself)",
+                description="Path of the file to write, relative to the working directory (default is the working directory itself)",
+            ),
+            "content": types.Schema(
+                type=types.Type.STRING, description="Text content to write to the file"
             ),
         },
+        required=["file_path", "content"],
     ),
 )
 
@@ -35,7 +39,7 @@ def write_file(working_directory: str, file_path: str, content: str) -> str:
 
         os.makedirs(os.path.dirname(target_path), exist_ok=True)
 
-        _ = open(target_path, mode="w").write(content)
+        open(target_path, mode="w").write(content)
 
         return (
             f'Successfully wrote to "{file_path}" ({len(content)} characters written)'
